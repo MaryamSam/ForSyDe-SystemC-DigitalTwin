@@ -1,0 +1,70 @@
+main.o: main.cpp top.hpp report.hpp ../../../src/forsyde.hpp \
+ ../../../src/forsyde/prettyprint.hpp \
+ ../../../src/forsyde/abssemantics.hpp ../../../src/forsyde/ut_moc.hpp \
+ ../../../src/forsyde/ut_process.hpp \
+ ../../../src/forsyde/abssemantics.hpp \
+ ../../../src/forsyde/ut_process_constructors.hpp \
+ ../../../src/forsyde/ut_helpers.hpp ../../../src/forsyde/sy_moc.hpp \
+ ../../../src/forsyde/abst_ext.hpp ../../../src/forsyde/sy_process.hpp \
+ ../../../src/forsyde/sy_process_constructors.hpp \
+ ../../../src/forsyde/sy_helpers.hpp \
+ ../../../src/forsyde/sy_process_constructors_strict.hpp \
+ ../../../src/forsyde/sy_helpers_strict.hpp \
+ ../../../src/forsyde/sy_lib.hpp ../../../src/forsyde/sy_moc.hpp \
+ ../../../src/forsyde/sdf_moc.hpp ../../../src/forsyde/sdf_process.hpp \
+ ../../../src/forsyde/sdf_process_constructors.hpp \
+ ../../../src/forsyde/sdf_helpers.hpp ../../../src/forsyde/sadf_moc.hpp \
+ ../../../src/forsyde/sadf_process.hpp \
+ ../../../src/forsyde/sadf_process_constructors.hpp \
+ ../../../src/forsyde/sadf_helpers.hpp ../../../src/forsyde/dde_moc.hpp \
+ ../../../src/forsyde/tt_event.hpp ../../../src/forsyde/dde_process.hpp \
+ ../../../src/forsyde/dde_process_constructors.hpp \
+ ../../../src/forsyde/dde_helpers.hpp ../../../src/forsyde/dt_moc.hpp \
+ ../../../src/forsyde/dt_process.hpp \
+ ../../../src/forsyde/dt_process_constructors.hpp \
+ ../../../src/forsyde/dt_process_constructors_p.hpp \
+ ../../../src/forsyde/dt_process_constructors_s.hpp \
+ ../../../src/forsyde/dt_process_constructors_t.hpp \
+ ../../../src/forsyde/dt_helpers.hpp ../../../src/forsyde/ct_moc.hpp \
+ ../../../src/forsyde/sub_signal.hpp ../../../src/forsyde/ct_process.hpp \
+ ../../../src/forsyde/ct_process_constructors.hpp \
+ ../../../src/forsyde/ct_helpers.hpp ../../../src/forsyde/ct_lib.hpp \
+ ../../../src/forsyde/ct_moc.hpp ../../../src/forsyde/dde_moc.hpp \
+ ../../../src/forsyde/mis.hpp ../../../src/forsyde/mis.hpp \
+ ../../../src/forsyde/mi_helpers.hpp ../../../src/forsyde/adaptivity.hpp \
+ ../../../src/forsyde/sy_wrappers.hpp siggen.hpp
+main.cpp top.hpp report.hpp ../../../src/forsyde.hpp :
+ ../../../src/forsyde/prettyprint.hpp :
+ ../../../src/forsyde/abssemantics.hpp ../../../src/forsyde/ut_moc.hpp :
+ ../../../src/forsyde/ut_process.hpp :
+ ../../../src/forsyde/abssemantics.hpp :
+ ../../../src/forsyde/ut_process_constructors.hpp :
+ ../../../src/forsyde/ut_helpers.hpp ../../../src/forsyde/sy_moc.hpp :
+ ../../../src/forsyde/abst_ext.hpp ../../../src/forsyde/sy_process.hpp :
+ ../../../src/forsyde/sy_process_constructors.hpp :
+ ../../../src/forsyde/sy_helpers.hpp :
+ ../../../src/forsyde/sy_process_constructors_strict.hpp :
+ ../../../src/forsyde/sy_helpers_strict.hpp :
+ ../../../src/forsyde/sy_lib.hpp ../../../src/forsyde/sy_moc.hpp :
+ ../../../src/forsyde/sdf_moc.hpp ../../../src/forsyde/sdf_process.hpp :
+ ../../../src/forsyde/sdf_process_constructors.hpp :
+ ../../../src/forsyde/sdf_helpers.hpp ../../../src/forsyde/sadf_moc.hpp :
+ ../../../src/forsyde/sadf_process.hpp :
+ ../../../src/forsyde/sadf_process_constructors.hpp :
+ ../../../src/forsyde/sadf_helpers.hpp ../../../src/forsyde/dde_moc.hpp :
+ ../../../src/forsyde/tt_event.hpp ../../../src/forsyde/dde_process.hpp :
+ ../../../src/forsyde/dde_process_constructors.hpp :
+ ../../../src/forsyde/dde_helpers.hpp ../../../src/forsyde/dt_moc.hpp :
+ ../../../src/forsyde/dt_process.hpp :
+ ../../../src/forsyde/dt_process_constructors.hpp :
+ ../../../src/forsyde/dt_process_constructors_p.hpp :
+ ../../../src/forsyde/dt_process_constructors_s.hpp :
+ ../../../src/forsyde/dt_process_constructors_t.hpp :
+ ../../../src/forsyde/dt_helpers.hpp ../../../src/forsyde/ct_moc.hpp :
+ ../../../src/forsyde/sub_signal.hpp ../../../src/forsyde/ct_process.hpp :
+ ../../../src/forsyde/ct_process_constructors.hpp :
+ ../../../src/forsyde/ct_helpers.hpp ../../../src/forsyde/ct_lib.hpp :
+ ../../../src/forsyde/ct_moc.hpp ../../../src/forsyde/dde_moc.hpp :
+ ../../../src/forsyde/mis.hpp ../../../src/forsyde/mis.hpp :
+ ../../../src/forsyde/mi_helpers.hpp ../../../src/forsyde/adaptivity.hpp :
+ ../../../src/forsyde/sy_wrappers.hpp siggen.hpp :
