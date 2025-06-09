@@ -570,7 +570,7 @@ private:
  * data-type.
  * 
  * It is mandatory to include at least one delay element in all feedback
- * loops since combinational loops are forbidden in ForSyDe.
+ * loops since combinational loops are forbidden in ForSyDe. // to prevent deadluck
  */
 template <class T>
 class delay : public sdf_process
@@ -736,7 +736,7 @@ public:
     /*! It creates an SC_THREAD which runs the user-imlpemented function
      * and writes the result using the output port
      */
-    constant(sc_module_name _name,      ///< The module name
+    constant(sc_module_name _name,      ///< The module name in sC_module type to creat SC_THREAD
               T init_val,                ///< The constant output value
               unsigned long long take=0 ///< number of tokens produced (0 for infinite)
              ) : sdf_process(_name), oport1("oport1"),
@@ -809,9 +809,9 @@ public:
     /*! It creates an SC_THREAD which runs the user-imlpemented function
      * and writes the result using the output port
      */
-    source(sc_module_name _name,   ///< The module name
-           functype _func,         ///< function to be passed
-           T init_val,              ///< Initial state
+    source(sc_module_name _name,     ///< The module name
+           functype _func,           ///< function to be passed
+           T init_val,                ///< Initial state
            unsigned long long take=0 ///< number of tokens produced (0 for infinite)
           ) : sdf_process(_name), oport1("oport1"),
               init_st(init_val), take(take), _func(_func)

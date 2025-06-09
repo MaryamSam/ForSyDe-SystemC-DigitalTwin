@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <tuple>
+#include <Eigen/Dense>
 
 #include "abst_ext.hpp"
 #include "sy_process_constructors.hpp"
