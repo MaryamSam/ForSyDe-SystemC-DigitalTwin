@@ -26,6 +26,7 @@
 #include <tuple>
 #include <array>
 #include <algorithm>
+#include <Eigen/Dense>
 
 #include "abst_ext.hpp"
 #include "sy_process.hpp"
@@ -2274,6 +2275,117 @@ private:
         boundOutChans[0].port = &oport1;
     }
 #endif
+};
+
+////////////////////////    
+
+//! Helper to extract value from abst_ext<T>
+/*! Returns the stored value by value to avoid dangling references. */
+template<typename T>
+inline T val(const abst_ext<T>& x) { return x.unsafe_from_abst_ext(); }
+
+//! Process constructor for a synchronous Kalman filter
+/*! This class implements a discrete-time Kalman filter in the SY MoC
+ *  following the init-prep-exec-prod-clean structure similar to comb.
+ */
+class kalman : public sy_process
+{
+public:
+    SY_in<Eigen::VectorXd> iport_u;     ///< control input u[k]
+    SY_in<Eigen::VectorXd> iport_y;     ///< measurement y[k]
+    SY_out<Eigen::VectorXd> oport_xhat; ///< estimated state x̂[k]
+    SY_out<Eigen::VectorXd> oport_yhat; ///< estimated output ŷ[k]
+
+    //! Constructor takes system matrices and initial conditions
+    kalman(sc_module_name name_,
+           const Eigen::MatrixXd& A,
+           const Eigen::MatrixXd& B,
+           const Eigen::MatrixXd& C,
+           const Eigen::MatrixXd& D,
+           const Eigen::MatrixXd& Q,
+           const Eigen::MatrixXd& R,
+           const Eigen::VectorXd& x0,
+           const Eigen::MatrixXd& P0)
+      : sy_process(name_),
+        iport_u("iport_u"), iport_y("iport_y"),
+        oport_xhat("oport_xhat"), oport_yhat("oport_yhat"),
+        A(A), B(B), C(C), D(D), Q(Q), R(R),
+        x_hat(x0), P(P0)
+    {}
+
+    //! Identify process kind
+    std::string forsyde_kind() const override { return "SY::kalman"; }
+
+private:
+    // System matrices and state
+    Eigen::MatrixXd A, B, C, D, Q, R, P;
+    Eigen::VectorXd x_hat;
+
+    // Buffers for optional values
+    abst_ext<Eigen::VectorXd>* u_buf;
+    abst_ext<Eigen::VectorXd>* y_buf;
+    abst_ext<Eigen::VectorXd>* xhat_buf;
+    abst_ext<Eigen::VectorXd>* yhat_buf;
+
+    void init() override
+    {
+        u_buf     = new abst_ext<Eigen::VectorXd>;
+        y_buf     = new abst_ext<Eigen::VectorXd>;
+        xhat_buf  = new abst_ext<Eigen::VectorXd>;
+        yhat_buf  = new abst_ext<Eigen::VectorXd>;
+    }
+    
+    void prep() override
+    {
+        *u_buf = iport_u.read();
+        *y_buf = iport_y.read();
+    }
+
+    void exec() override
+    {
+        if (!is_absent(*u_buf) && !is_absent(*y_buf)) {
+            // extract real vectors
+            const Eigen::VectorXd& u = val(*u_buf);
+            const Eigen::VectorXd& y = val(*y_buf);
+
+            // Prediction
+            Eigen::VectorXd x_pred = A * x_hat + B * u;
+            Eigen::MatrixXd P_pred = A * P * A.transpose() + Q;
+
+            // Update
+            Eigen::MatrixXd S = C * P_pred * C.transpose() + R;
+            Eigen::MatrixXd K = P_pred * C.transpose() * S.inverse();
+
+            Eigen::VectorXd y_pred   = C * x_pred + D * u;
+            Eigen::VectorXd residual = y - y_pred;
+
+            x_hat = x_pred + K * residual;
+            P     = (Eigen::MatrixXd::Identity(P.rows(), P.cols()) - K * C) * P_pred;
+
+            Eigen::VectorXd yhat = C * x_hat + D * u;
+
+            *xhat_buf = abst_ext<Eigen::VectorXd>(x_hat);
+            *yhat_buf = abst_ext<Eigen::VectorXd>(yhat);
+        }
+        else {
+            *xhat_buf = abst_ext<Eigen::VectorXd>();
+            *yhat_buf = abst_ext<Eigen::VectorXd>();
+        }
+    }
+
+    void prod() override
+    {
+        write_multiport(oport_xhat, *xhat_buf);
+        write_multiport(oport_yhat, *yhat_buf);
+    }
+
+    void clean() override
+    {
+        delete u_buf;
+        delete y_buf;
+        delete xhat_buf;
+        delete yhat_buf;
+    }
 };
 
 }
