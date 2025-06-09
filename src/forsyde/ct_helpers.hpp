@@ -90,13 +90,13 @@ template <class OIf, class IIf, std::size_t N>
 inline combX<N>* make_combX(std::string pName,
     typename combX<N>::functype _func,
     OIf& outS,
-    std::array<IIf,N>& inpS
+    std::array<IIf*,N>& inpS
     )
 {
     auto p = new combX<N>(pName.c_str(), _func);
     
     for (int i=0;i<N;i++)
-    	(*p).iport[i](inpS[i]);
+    	(*p).iport[i](*inpS[i]);
     (*p).oport1(outS);
     
     return p;
@@ -205,7 +205,8 @@ inline sink* make_sink(std::string pName,
     auto p = new sink(pName.c_str(), _func, sampling_period);
     
     (*p).iport1(inS);
-    
+    printf("name = %s" ,pName.c_str() );
+    std:: cout << " , Sample time =" << sampling_period <<std::endl;
     return p;
 }
 
@@ -250,6 +251,39 @@ inline fanout* make_fanout(std::string pName,
     return p;
 }
 
+// fanout helper
+template <class IIf, class OIf>
+inline fanout* make_fanout2(std::string pName,
+    OIf& outS1,
+    OIf& outS2,
+    IIf& inpS)
+{
+    auto p = new fanout(pName.c_str());
+    p->iport1(inpS);
+    p->oport1(outS1);
+    p->oport1(outS2);
+    return p;
+}
+
+template <class IIf, class OIf>
+inline fanout* make_fanout5(std::string pName,
+    OIf& outS1,
+    OIf& outS2,
+    OIf& outS3,
+    OIf& outS4,
+    OIf& outS5,
+    IIf& inpS
+    )
+{
+    auto p = new fanout(pName.c_str());
+    p->iport1(inpS);
+    p->oport1(outS1);
+    p->oport1(outS2);
+    p->oport1(outS3);
+    p->oport1(outS4);
+    p->oport1(outS5);
+    return p;
+}
 
 }
 }
