@@ -599,6 +599,34 @@ inline fanout<T>* make_fanout(const std::string& pName,
     return p;
 }
 
+///////////////////////////////////
+//! Helper function to construct a Kalman filter process
+/*! This function creates a SY::kalman process and
+ *  connects its input and output ports to the given FIFO channels.
+ */
+// template <class OXIf, class OYIf, class IUIf, class IYIf>
+// inline kalman* make_kalman(const std::string& pName,
+//     const Eigen::MatrixXd& A,
+//     const Eigen::MatrixXd& B,
+//     const Eigen::MatrixXd& C,
+//     const Eigen::MatrixXd& D,
+//     const Eigen::MatrixXd& Q,
+//     const Eigen::MatrixXd& R,
+//     const Eigen::VectorXd& x0,
+//     const Eigen::MatrixXd& P0,
+//     OXIf& out_xhat,
+//     OYIf& out_yhat,
+//     IUIf& in_u,
+//     IYIf& in_y
+//     )
+// {
+//     auto p = new kalman(pName.c_str(), A, B, C, D, Q, R, x0, P0);
+//     (*p).iport_u(in_u);
+//     (*p).iport_y(in_y);
+//     (*p).oport_xhat(out_xhat);
+//     (*p).oport_yhat(out_yhat);
+//     return p;
+// }
 
 }
 }

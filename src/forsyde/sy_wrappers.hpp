@@ -25,7 +25,10 @@
 #include <tuple>
 #include <iostream>
 
-#include "mi_gdb.h"   //! Based on the GDB/Machine Interface library (libmigdb: http://libmigdb.sourceforge.net/)
+//#include "mi_gdb.h"   //! Based on the GDB/Machine Interface library (libmigdb: http://libmigdb.sourceforge.net/)
+#include <sys/socket.h>
+#include <netdb.h>
+#include <strings.h>
 #include <stdio.h>
 #include <fcntl.h>
 #include <sys/types.h>
@@ -50,133 +53,133 @@ using namespace sc_core;
  * with an instance of GDB. The class is parameterized for input and
  * output data-types.
  */
-template <typename T0, typename T1>
-class gdbwrap : public sy_process
-{
-public:
-    SY_in<T1>  iport1;       ///< port for the input channel
-    SY_out<T0> oport1;        ///< port for the output channel
+// template <typename T0, typename T1>
+// class gdbwrap : public sy_process
+// {
+// public:
+//     SY_in<T1>  iport1;       ///< port for the input channel
+//     SY_out<T0> oport1;        ///< port for the output channel
 
-    //! The constructor requires the module name
-    /*! It creates an SC_THREAD which reads data from its input port,
-     * provides it to the external model, triggers the execution of the
-     * external model, collects the produced outputs and writes them
-     * using the output port
-     */
-    gdbwrap(const sc_module_name& _name,      ///< process name
-         const std::string& exec_name         ///< name of the executable file
-         ) : sy_process(_name), iport1("iport1"), oport1("oport1"),
-             exec_name(exec_name)
-    {
-#ifdef FORSYDE_INTROSPECTION
-        arg_vec.push_back(std::make_tuple("exec_name",exec_name));
-#endif
-    }
+//     //! The constructor requires the module name
+//     /*! It creates an SC_THREAD which reads data from its input port,
+//      * provides it to the external model, triggers the execution of the
+//      * external model, collects the produced outputs and writes them
+//      * using the output port
+//      */
+//     gdbwrap(const sc_module_name& _name,      ///< process name
+//          const std::string& exec_name         ///< name of the executable file
+//          ) : sy_process(_name), iport1("iport1"), oport1("oport1"),
+//              exec_name(exec_name)
+//     {
+// #ifdef FORSYDE_INTROSPECTION
+//         arg_vec.push_back(std::make_tuple("exec_name",exec_name));
+// #endif
+//     }
     
-    //! Specifying from which process constructor is the module built
-    std::string forsyde_kind() const {return "SY::gdbwrap";}
+//     //! Specifying from which process constructor is the module built
+//     std::string forsyde_kind() const {return "SY::gdbwrap";}
 
-private:
-    // Inputs and output variables
-    T0* oval;
-    abst_ext<T1>* ival1;
-    std::istringstream oval_str;
-    std::ostringstream ival1_str;
+// private:
+//     // Inputs and output variables
+//     T0* oval;
+//     abst_ext<T1>* ival1;
+//     std::istringstream oval_str;
+//     std::ostringstream ival1_str;
     
-    //! The function passed to the process constructor
-    std::string exec_name;
+//     //! The function passed to the process constructor
+//     std::string exec_name;
     
-    // Debugger-specific definitions
-    MIDebugger d;
-    mi_bkpt *bk_in1, *bk_out;
+//     // Debugger-specific definitions
+//     MIDebugger d;
+//     mi_bkpt *bk_in1, *bk_out;
     
-    //Implementing the abstract semantics
-    void init()
-    {
-      oval = new T0;
-      ival1 = new abst_ext<T1>;
-      // Connect to gdb child.
-      if (!d.Connect())
-        SC_REPORT_ERROR(name(),"Connection to child GDB instance failed.");
+//     //Implementing the abstract semantics
+//     void init()
+//     {
+//       oval = new T0;
+//       ival1 = new abst_ext<T1>;
+//       // Connect to gdb child.
+//       if (!d.Connect())
+//         SC_REPORT_ERROR(name(),"Connection to child GDB instance failed.");
       
-      // Set the name of the child and the command line aguments.
-      // It also opens the xterm.
-      if (!d.SelectTargetX11(exec_name.c_str()))
-        SC_REPORT_ERROR(name(),"Error executing the external model");
+//       // Set the name of the child and the command line aguments.
+//       // It also opens the xterm.
+//       if (!d.SelectTargetX11(exec_name.c_str()))
+//         SC_REPORT_ERROR(name(),"Error executing the external model");
       
-      /* Set the breakpoints */
-      bk_in1=d.Breakpoint("forsyde_read_in1");
-      bk_out=d.Breakpoint("forsyde_write_out");
-      if (!bk_in1 || !bk_out)
-        SC_REPORT_ERROR(name(),"Error Setting the breakpoints");
-      mi_free_bkpt(bk_in1);
-      mi_free_bkpt(bk_out);
+//       /* Set the breakpoints */
+//       bk_in1=d.Breakpoint("forsyde_read_in1");
+//       bk_out=d.Breakpoint("forsyde_write_out");
+//       if (!bk_in1 || !bk_out)
+//         SC_REPORT_ERROR(name(),"Error Setting the breakpoints");
+//       mi_free_bkpt(bk_in1);
+//       mi_free_bkpt(bk_out);
       
-      // Start the executation of the external model
-      async_run(d.RunOrContinue());
+//       // Start the executation of the external model
+//       async_run(d.RunOrContinue());
       
-      /* disabling the async mode */
-      //~ d.Send("-gdb-set mi-async off");
-    }
+//       /* disabling the async mode */
+//       //~ d.Send("-gdb-set mi-async off");
+//     }
     
-    void prep()
-    {
-        *ival1 = iport1.read();
-        ival1_str<<unsafe_from_abst_ext(*ival1);
-        async_run(d.StepOver());
-        d.ModifyExpression("forsyde_in1",const_cast<char*>(ival1_str.str().c_str()));
-        ival1_str.str(std::string());
-    }
+//     void prep()
+//     {
+//         *ival1 = iport1.read();
+//         ival1_str<<unsafe_from_abst_ext(*ival1);
+//         async_run(d.StepOver());
+//         d.ModifyExpression("forsyde_in1",const_cast<char*>(ival1_str.str().c_str()));
+//         ival1_str.str(std::string());
+//     }
     
-    void exec()
-    {
-      // Resume execution
-      async_run(d.Continue());
-    }
+//     void exec()
+//     {
+//       // Resume execution
+//       async_run(d.Continue());
+//     }
     
-    void prod()
-    {
-      async_run(d.StepOver());
-      oval_str.str(d.EvalExpression("forsyde_out"));
-      oval_str >> *oval;
-      oval_str.clear();
-      write_multiport(oport1, abst_ext<T0>(*oval))
+//     void prod()
+//     {
+//       async_run(d.StepOver());
+//       oval_str.str(d.EvalExpression("forsyde_out"));
+//       oval_str >> *oval;
+//       oval_str.clear();
+//       write_multiport(oport1, abst_ext<T0>(*oval))
       
-      // Resume execution
-      async_run(d.Continue());
-    }
+//       // Resume execution
+//       async_run(d.Continue());
+//     }
     
-    void clean()
-    {
-      d.TargetUnselect();
-      d.Disconnect();
-      delete ival1;
-      delete oval;
-    }
+//     void clean()
+//     {
+//       d.TargetUnselect();
+//       d.Disconnect();
+//       delete ival1;
+//       delete oval;
+//     }
     
-    inline void async_run(int res)
-    {
-      if (!res)
-        SC_REPORT_ERROR(name(),"Error in GDB command execution!");
+//     inline void async_run(int res)
+//     {
+//       if (!res)
+//         SC_REPORT_ERROR(name(),"Error in GDB command execution!");
       
-      mi_stop *sr;
-      while (!d.Poll(sr)) wait(SC_ZERO_TIME);
-      if (sr)
-        mi_free_stop(sr);
-      else
-        SC_REPORT_ERROR(name(),mi_error_from_gdb);
-    }
+//       mi_stop *sr;
+//       while (!d.Poll(sr)) wait(SC_ZERO_TIME);
+//       if (sr)
+//         mi_free_stop(sr);
+//       else
+//         SC_REPORT_ERROR(name(),mi_error_from_gdb);
+//     }
     
-#ifdef FORSYDE_INTROSPECTION
-    void bindInfo()
-    {
-        boundInChans.resize(1);     // only one input port
-        boundInChans[0].port = &iport1;
-        boundOutChans.resize(1);    // only one output port
-        boundOutChans[0].port = &oport1;
-    }
-#endif
-};
+// #ifdef FORSYDE_INTROSPECTION
+//     void bindInfo()
+//     {
+//         boundInChans.resize(1);     // only one input port
+//         boundInChans[0].port = &iport1;
+//         boundOutChans.resize(1);    // only one output port
+//         boundOutChans[0].port = &oport1;
+//     }
+// #endif
+// };
 
 //! Process constructor for a pipe wrapper with one input and one output
 /*! This class is used to build pipe wrapper with one input and one
@@ -499,6 +502,306 @@ private:
 #endif
 };
 
+//! Process constructor for a socket wrapper with one input and one output
+/*! This class is used to build socket wrapper with one input and one
+ * output. It uses the TCP socket to communicate and synchronize with an
+ * external simulator. The class is parameterized for input and output
+ * data-types.
+ */
+template <typename T0, typename T1>
+class socketwrap : public sy_process
+{
+public:
+    SY_in<T1>  iport1;       ///< port for the input channel
+    SY_out<T0> oport1;        ///< port for the output channel
+
+    //! The constructor requires the module name
+    /*! It creates an SC_THREAD which reads data from its input port,
+     * provides it to the external model, collects the produced outputs
+     * and writes them using the output port
+     */
+    socketwrap(const sc_module_name& _name,    ///< process name
+         const int& offset,                   ///< The offset between the input and output. Positive: read from the model first. Negative: write to the model first.
+         const std::string& ip_addr,          ///< The IP address of the external model
+         const int& port                      ///< The port number of the external model
+         ) : sy_process(_name), iport1("iport1"), oport1("oport1"),
+             offset(offset), ip_addr(ip_addr), port(port)
+    {
+#ifdef FORSYDE_INTROSPECTION
+        arg_vec.push_back(std::make_tuple("ip_addr",ip_addr));
+        std::stringstream ss;
+        ss << port;
+        arg_vec.push_back(std::make_tuple("port", ss.str()));
+#endif
+    }
+    
+    //! Specifying from which process constructor is the module built
+    std::string forsyde_kind() const {return "SY::socketwrap";}
+
+private:
+
+    // Inputs and output variables
+    T0* oval;
+    abst_ext<T1>* ival1;
+    std::istringstream oval_str; // we are able to read from it
+    std::ostringstream ival_str; // we are able to write into it
+    
+    //! The offset between the input and output
+    int offset;
+    //! The IP address of the external model
+    std::string ip_addr;
+    //! The port number of the external model
+    int port;
+    
+    // Communication socket
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    bool initiated;
+    
+    //Implementing the abstract semantics
+    void init()
+    {
+      oval = new T0;
+      ival1 = new abst_ext<T1>;
+      
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+      if (sockfd < 0)
+          SC_REPORT_ERROR(name(),"Error opening socket");
+      
+      struct hostent *server = gethostbyname(ip_addr.c_str());
+      if (server == NULL)
+          SC_REPORT_ERROR(name(),"No such host");
+      
+      memset((char *) &serv_addr, 0, sizeof(serv_addr));
+      serv_addr.sin_family = AF_INET;
+      memcpy((char *)&serv_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);
+      serv_addr.sin_port = htons(port);
+      
+      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+          SC_REPORT_ERROR(name(),"Error connecting");
+      
+      initiated = false;
+    }
+    
+    void prep()
+    {
+        if (offset<=0)
+        {
+            *ival1 = iport1.read();
+            ival_str<<unsafe_from_abst_ext(*ival1);
+            
+            std::string data = ival_str.str();
+            size_t total_written = 0;
+            while (total_written < data.length()) {
+                ssize_t n = write(sockfd, data.c_str() + total_written, data.length() - total_written);
+                if (n < 0) {
+                    SC_REPORT_ERROR(name(),"Error writing to socket");
+                }
+                total_written += n;
+                wait(SC_ZERO_TIME);
+            }
+            ival_str.str(std::string());
+        }
+    }
+    
+    void exec() {}
+    
+    void prod()
+    {
+        if (offset>=0)
+        {
+            char buf[80];
+            int n = 0;
+            while (true) {
+                n = read(sockfd, buf + n, 79 - n);
+                if (n < 0) {
+                    SC_REPORT_ERROR(name(),"Error reading from socket");
+                } else if (n == 0) {
+                    wait(SC_ZERO_TIME);
+                } else if (buf[n-1] == '\0') {
+                    break;
+                }
+            }
+            
+            oval_str.str(std::string(buf));
+            oval_str >> *oval;
+            oval_str.clear();
+            write_multiport(oport1, abst_ext<T0>(*oval))
+        }
+        if (offset<0) offset++;
+        else if (offset>0) offset--;
+    }
+
+    void clean()
+    {
+      close(sockfd);
+      delete ival1;
+      delete oval;
+    }
+
+#ifdef FORSYDE_INTROSPECTION
+    void bindInfo()
+    {
+        boundInChans.resize(1);     // only one input port
+        boundInChans[0].port = &iport1;
+        boundOutChans.resize(1);    // only one output port
+        boundOutChans[0].port = &oport1;
+    }
+#endif
+};
+
+//! Process constructor for a socket wrapper with two inputs and one output
+/*! This class is used to build socket wrapper with two inputs and one
+ * output. It uses the TCP socket to communicate and synchronize with an
+ * external simulator. The class is parameterized for input and output
+ * data-types.
+ */
+template <typename T0, typename T1, typename T2>
+class socketwrap2 : public sy_process
+{
+public:
+    SY_in<T1>  iport1;       ///< port for the input channel
+    SY_in<T2>  iport2;       ///< port for the second channel
+    SY_out<T0> oport1;        ///< port for the output channel
+
+    //! The constructor requires the module name
+    /*! It creates an SC_THREAD which reads data from its input port,
+     * provides it to the external model, collects the produced outputs
+     * and writes them using the output port
+     */
+    socketwrap2(const sc_module_name& _name,   ///< process name
+         const int& offset,                   ///< The offset between the input and output. Positive: read from the model first. Negative: write to the model first.
+         const std::string& ip_addr,          ///< The IP address of the external model
+         const int& port                      ///< The port number of the external model
+         ) : sy_process(_name), iport1("iport1"), iport2("iport2"), 
+             oport1("oport1"), offset(offset), ip_addr(ip_addr), port(port)
+    {
+#ifdef FORSYDE_INTROSPECTION
+        arg_vec.push_back(std::make_tuple("ip_addr",ip_addr));
+        std::stringstream ss;
+        ss << port;
+        arg_vec.push_back(std::make_tuple("port", ss.str()));
+#endif
+    }
+    
+    //! Specifying from which process constructor is the module built
+    std::string forsyde_kind() const {return "SY::socketwrap2";}
+
+private:
+
+    // Inputs and output variables
+    T0* oval;
+    abst_ext<T1>* ival1;
+    abst_ext<T2>* ival2;
+    std::istringstream oval_str;
+    std::ostringstream ival_str;
+    
+    //! The offset between the input and output
+    int offset;
+    //! The IP address of the external model
+    std::string ip_addr;
+    //! The port number of the external model
+    int port;
+    
+    // Communication socket
+    int sockfd;
+    struct sockaddr_in serv_addr;
+    bool initiated;
+    
+    //Implementing the abstract semantics
+    void init()
+    {
+      oval = new T0;
+      ival1 = new abst_ext<T1>;
+      ival2 = new abst_ext<T2>;
+      
+      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+      if (sockfd < 0)
+          SC_REPORT_ERROR(name(),"Error opening socket");
+      
+      struct hostent *server = gethostbyname(ip_addr.c_str());
+      if (server == NULL)
+          SC_REPORT_ERROR(name(),"No such host");
+      
+      memset((char *) &serv_addr, 0, sizeof(serv_addr));
+      serv_addr.sin_family = AF_INET;
+      memcpy((char *)&serv_addr.sin_addr.s_addr, (char *)server->h_addr, server->h_length);  //?
+      serv_addr.sin_port = htons(port);
+      
+      if (connect(sockfd,(struct sockaddr *) &serv_addr,sizeof(serv_addr)) < 0)
+          SC_REPORT_ERROR(name(),"Error connecting");
+      
+      initiated = false;
+    }
+    
+    void prep()
+    {
+        if (offset<=0)
+        {
+            *ival1 = iport1.read();
+            *ival2 = iport2.read();
+            ival_str<<unsafe_from_abst_ext(*ival1)<<" "<<unsafe_from_abst_ext(*ival2);
+            
+            std::string data = ival_str.str();
+            size_t total_written = 0;
+            while (total_written < data.length()+1) {
+                ssize_t n = write(sockfd, data.c_str() + total_written, data.length()+1 - total_written);
+                if (n < 0) {
+                    SC_REPORT_ERROR(name(),"Error writing to socket");
+                }
+                total_written += n;
+                wait(SC_ZERO_TIME);
+            }
+            ival_str.str(std::string());
+        }
+    }
+    
+    void exec() {}
+    
+    void prod()
+    {
+        if (offset>=0)
+        {
+            char buf[80];
+            int n = 0;
+            while (true) {
+                n = read(sockfd, buf + n, 79 - n);
+                if (n < 0) {
+                    SC_REPORT_ERROR(name(),"Error reading from socket");
+                } else if (n == 0) {
+                    wait(SC_ZERO_TIME);
+                } else if (std::find(buf, buf + n, '\0') != buf + n) // check if end of string (null) is received
+                    break;
+            }
+            
+            oval_str.str(std::string(buf));
+            oval_str >> *oval;
+            oval_str.clear();
+            write_multiport(oport1, abst_ext<T0>(*oval))
+        }
+        if (offset<0) offset++;
+        else if (offset>0) offset--;
+    }
+
+    void clean()
+    {
+      close(sockfd);
+      delete ival1;
+      delete ival2;
+      delete oval;
+    }
+
+#ifdef FORSYDE_INTROSPECTION
+    void bindInfo()
+    {
+        boundInChans.resize(2);     // only one input port
+        boundInChans[0].port = &iport1;
+        boundInChans[1].port = &iport2;
+        boundOutChans.resize(1);    // only one output port
+        boundOutChans[0].port = &oport1;
+    }
+#endif
+};
 
 //! Helper function to construct a gdbwrap process
 /*! This function is used to construct a GDB wrapper process (SystemC
@@ -507,21 +810,21 @@ private:
  * It also removes bilerplate code by using type-inference feature of
  * C++ and automatic binding to the input and output FIFOs.
  */
-template <class T0, template <class> class OIf,
-          class T1, template <class> class I1If>
-inline gdbwrap<T0,T1>* make_gdbwrap(const std::string& pName,
-    const std::string& exec_name,
-    OIf<T0>& outS,
-    I1If<T1>& inp1S
-    )
-{
-    auto p = new gdbwrap<T0,T1>(pName.c_str(), exec_name);
+// template <class T0, template <class> class OIf,
+//           class T1, template <class> class I1If>
+// inline gdbwrap<T0,T1>* make_gdbwrap(const std::string& pName,
+//     const std::string& exec_name,
+//     OIf<T0>& outS,
+//     I1If<T1>& inp1S
+//     )
+// {
+//     auto p = new gdbwrap<T0,T1>(pName.c_str(), exec_name);
     
-    (*p).iport1(inp1S);
-    (*p).oport1(outS);
+//     (*p).iport1(inp1S);
+//     (*p).oport1(outS);
     
-    return p;
-}
+//     return p;
+// }
 
 //! Helper function to construct a pipewrap process
 /*! This function is used to construct a pipe wrapper process (SystemC
@@ -566,6 +869,59 @@ inline pipewrap2<T0,T1,T2>* make_pipewrap2(const std::string& pName,
     )
 {
     auto p = new pipewrap2<T0,T1,T2>(pName.c_str(), offset, path_name);
+    
+    (*p).iport1(inp1S);
+    (*p).iport2(inp2S);
+    (*p).oport1(outS);
+    
+    return p;
+}
+
+//! Helper function to construct a socketwrap process
+/*! This function is used to construct a socket wrapper process (SystemC
+ * module) and connect its input and output signals.
+ * It provides a more functional style definition of a ForSyDe process.
+ * It also removes bilerplate code by using type-inference feature of
+ * C++ and automatic binding to the input and output FIFOs.
+ */
+template <class T0, template <class> class OIf,
+          class T1, template <class> class I1If>
+inline socketwrap<T0,T1>* make_socketwrap(const std::string& pName,
+    const int& offset,
+    const std::string& ip_addr,
+    const int& port,
+    OIf<T0>& outS,
+    I1If<T1>& inp1S
+    )
+{
+    auto p = new socketwrap<T0,T1>(pName.c_str(), offset, ip_addr, port);
+    
+    (*p).iport1(inp1S);
+    (*p).oport1(outS);
+    
+    return p;
+}
+
+//! Helper function to construct a socketwrap2 process
+/*! This function is used to construct a socket wrapper process (SystemC
+ * module) and connect its input and output signals.
+ * It provides a more functional style definition of a ForSyDe process.
+ * It also removes bilerplate code by using type-inference feature of
+ * C++ and automatic binding to the input and output FIFOs.
+ */
+template <class T0, template <class> class OIf,
+          class T1, template <class> class I1If,
+          class T2, template <class> class I2If>
+inline socketwrap2<T0,T1,T2>* make_socketwrap2(const std::string& pName,
+    const int& offset,
+    const std::string& ip_addr,
+    const int& port,
+    OIf<T0>& outS,
+    I1If<T1>& inp1S,
+    I2If<T2>& inp2S
+    )
+{
+    auto p = new socketwrap2<T0,T1,T2>(pName.c_str(), offset, ip_addr, port);
     
     (*p).iport1(inp1S);
     (*p).iport2(inp2S);
