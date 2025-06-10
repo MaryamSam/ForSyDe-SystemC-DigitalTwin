@@ -32,13 +32,13 @@ SC_MODULE(top){
         const double R = 1.7;     
         const double J = 3.88e-7;   
         const double b = 2.75e-4;  
-        const double K = 0.0059;    
+        const double Kt = 0.0059; 
+        const double Kb = 0.0274;    
 
-        std::vector<CTTYPE> num_e = { J, b };
-        std::vector<CTTYPE> den_e = { (J * L),(J * R + b * L),(b * R + Kb * Kt) };
+        std::vector<CTTYPE> num_i = { J, b };
+        std::vector<CTTYPE> num_w = { Kt } ;
 
-        std::vector<CTTYPE> num_m = { Kt / J };
-        std::vector<CTTYPE> den_m = {1.0, (b / J)};
+        std::vector<CTTYPE> den = { (J * L),(J * R + b * L),(b * R + Kb * Kt) };
         
         //I(s)/V(s) = (J s + b) / [J L s^2 + (J R + b L) s + (b R + K^2)]
         //omega(s)/V(s) = (k/J) / [s + (b/J)] 
@@ -49,8 +49,8 @@ SC_MODULE(top){
 
         make_delay("dalay", sc_time(10, SC_US) ,v_out ,v_in);
 
-        make_filterf( "filter_e", num_e, den_e, sc_time(10, SC_SEC), i_out1, v_out);
-        make_filterf( "filter_m", num_m, den_m, sc_time(10, SC_US), w_out, i_in );
+        make_filterf( "filter_i", num_i, den, sc_time(10, SC_SEC), i_out1, v_out);
+        make_filterf( "filter_w", num_w, den, sc_time(10, SC_US), w_out, i_in );
 
         make_sink("sink_i",  reportI, sc_time(50, SC_US), i_out2);
         make_sink("sink_w",  reportW, sc_time(50, SC_US), w_out);
