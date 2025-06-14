@@ -22,7 +22,7 @@ void in_func(CTTYPE& out1, const sc_time& inp1)
 
 SC_MODULE(top){
 
-    CT2CT v_in , v_out;    
+    CT2CT v_in , v_out , v_out2 ,v_out3;    
     CT2CT i_in , i_out1, i_out2;   
     CT2CT w_out;    
 
@@ -43,17 +43,22 @@ SC_MODULE(top){
         //I(s)/V(s) = (J s + b) / [J L s^2 + (J R + b L) s + (b R + K^2)]
         //omega(s)/V(s) = (k/J) / [s + (b/J)] 
 
-        make_fanout2("fan_i", i_in, i_out2, i_out1);
+        //make_fanout("fan_i", i_out2, i_out1);
+        make_fanout2("fan_v", v_out2 , v_out3, v_out);
 
-        make_source("stimuli_v", in_func, sc_time(10,SC_SEC), v_in);
+        make_source("stimuli_v", in_func, sc_time(50,SC_SEC), v_in);
 
         make_delay("dalay", sc_time(10, SC_US) ,v_out ,v_in);
 
-        make_filterf( "filter_i", num_i, den, sc_time(10, SC_SEC), i_out1, v_out);
-        make_filterf( "filter_w", num_w, den, sc_time(10, SC_US), w_out, i_in );
+        make_filterf( "filter_i", num_i, den, sc_time(50, SC_US), i_out1, v_out2);
+        make_filterf( "filter_w", num_w, den, sc_time(50, SC_US), w_out, v_out3 );
 
-        make_sink("sink_i",  reportI, sc_time(50, SC_US), i_out2);
-        make_sink("sink_w",  reportW, sc_time(50, SC_US), w_out);
+        // make_sink("sink_i",  reportI, sc_time(50, SC_US), i_out2);
+        // make_sink("sink_w",  reportW, sc_time(50, SC_US), w_out);
+
+        make_traceSig("trace_i", sc_time(50, SC_US), i_out1);
+        make_traceSig("trace_w", sc_time(50, SC_US), w_out);
+        
 
     }
     
